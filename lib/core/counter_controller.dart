@@ -84,6 +84,19 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
+
+    void manualIncrement() {
+    count++;
+    notifyListeners();
+  }
+
+  void manualDecrement() {
+    if (count > 0) {
+      count--;
+      notifyListeners();
+    }
+  }
+
   Color get counterColor {
     if (count >= target) return Colors.red;
     if (target - count <= 1) return Colors.orange;

@@ -24,9 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onPulse: counter.onPulse,
       onValue: (v) {
         if (buffer.length > 150) buffer.removeAt(0);
-        setState(() {
-          buffer.add(v);
-        });
+        buffer.add(v);
+        // حالا این متد وجود دارد و خطا نمی‌دهد
         counter.updateSensorValue(v);
       },
     ).start();
@@ -40,13 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text('Coil Counter')),
       body: Column(
         children: [
+          const SizedBox(height: 50),
+          Text('${counter.count}', style: const TextStyle(fontSize: 100, fontWeight: FontWeight.bold)),
+          const Text("TURNS", style: TextStyle(letterSpacing: 4)),
           const SizedBox(height: 20),
-          Text(counter.count.toString(),
-              style: const TextStyle(fontSize: 80, fontWeight: FontWeight.bold)),
-          const Text("Turns Detected"),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20),
               child: SensorChart(
                 values: buffer,
                 threshold: counter.threshold,
@@ -55,21 +54,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 30),
+            padding: const EdgeInsets.only(bottom: 50),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                    onPressed: counter.start, 
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                    child: const Text('Start')),
-                ElevatedButton(
-                    onPressed: counter.stop, 
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    child: const Text('Stop')),
-                ElevatedButton(
-                    onPressed: counter.reset, 
-                    child: const Text('Reset')),
+                FloatingActionButton(onPressed: counter.start, child: const Icon(Icons.play_arrow), backgroundColor: Colors.green),
+                FloatingActionButton(onPressed: counter.stop, child: const Icon(Icons.stop), backgroundColor: Colors.red),
+                FloatingActionButton(onPressed: counter.reset, child: const Icon(Icons.refresh)),
               ],
             ),
           ),

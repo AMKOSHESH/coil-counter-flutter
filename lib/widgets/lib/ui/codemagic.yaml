@@ -5,6 +5,8 @@ workflows:
     environment:
       flutter: stable
     scripts:
+      # این دستور حیاتی است: ساختار اندروید را بازسازی می‌کند
+      - flutter create . --org com.example.coil_counter --project-name coil_counter
       - flutter pub get
       - flutter build apk --debug
     artifacts:

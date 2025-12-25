@@ -93,26 +93,36 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 10),
 
           /// دکمه‌ها
-          Padding(
-            padding: const EdgeInsets.only(bottom: 30),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: counter.start,
-                  child: const Text('START'),
-                ),
-                ElevatedButton(
-                  onPressed: counter.stop,
-                  child: const Text('STOP'),
-                ),
-                ElevatedButton(
-                  onPressed: counter.reset,
-                  child: const Text('RESET'),
-                ),
-              ],
-            ),
-          ),
+
+Padding(
+  padding: const EdgeInsets.only(bottom: 30),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      ElevatedButton(
+        onPressed: counter.start,
+        child: const Text('START'),
+      ),
+      ElevatedButton(
+        onPressed: counter.stop,
+        child: const Text('STOP'),
+      ),
+      IconButton(
+        icon: const Icon(Icons.remove_circle, size: 36),
+        onPressed: counter.manualDecrement,
+      ),
+      IconButton(
+        icon: const Icon(Icons.add_circle, size: 36),
+        onPressed: counter.manualIncrement,
+      ),
+      ElevatedButton(
+        onPressed: counter.reset,
+        child: const Text('RESET'),
+      ),
+    ],
+  ),
+),
+
         ],
       ),
     );

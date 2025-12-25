@@ -17,16 +17,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-
-    final counter =
-        Provider.of<CounterController>(context, listen: false);
+    final counter = Provider.of<CounterController>(context, listen: false);
 
     MagnetometerSensor(
       detector: counter.detector,
       onPulse: counter.onPulse,
       onValue: (v) {
         if (buffer.length > 150) buffer.removeAt(0);
-        buffer.add(v);
+        setState(() {
+          buffer.add(v);
+        });
         counter.updateSensorValue(v);
       },
     ).start();
@@ -40,22 +40,38 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text('Coil Counter')),
       body: Column(
         children: [
+          const SizedBox(height: 20),
           Text(counter.count.toString(),
-              style: const TextStyle(fontSize: 48)),
+              style: const TextStyle(fontSize: 80, fontWeight: FontWeight.bold)),
+          const Text("Turns Detected"),
           Expanded(
-            child: SensorChart(
-              values: buffer,
-              threshold: counter.threshold,
-              onTap: counter.setThreshold,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SensorChart(
+                values: buffer,
+                threshold: counter.threshold,
+                onTap: counter.setThreshold,
+              ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(onPressed: counter.start, child: const Text('Start')),
-              ElevatedButton(onPressed: counter.stop, child: const Text('Stop')),
-              ElevatedButton(onPressed: counter.reset, child: const Text('Reset')),
-            ],
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                    onPressed: counter.start, 
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: const Text('Start')),
+                ElevatedButton(
+                    onPressed: counter.stop, 
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    child: const Text('Stop')),
+                ElevatedButton(
+                    onPressed: counter.reset, 
+                    child: const Text('Reset')),
+              ],
+            ),
           ),
         ],
       ),

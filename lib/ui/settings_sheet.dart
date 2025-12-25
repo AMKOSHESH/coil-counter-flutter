@@ -8,54 +8,57 @@ class SettingsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.watch<CounterController>();
+    final targetController =
+        TextEditingController(text: c.target.toString());
 
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: ListView(
-        children: [
-          Text("Threshold: ${c.threshold.toStringAsFixed(1)}"),
-          Slider(
-            min: 10,
-            max: 200,
-            value: c.threshold,
-            onChanged: c.setThreshold,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
+          children: [
+            Text('Signal Level: ${c.sensorValue.toStringAsFixed(1)}'),
+            LinearProgressIndicator(
+              value: c.sensorValue / c.maxSensorValue,
+            ),
+            const SizedBox(height: 20),
 
-          Text("Target: ${c.target}"),
-          Slider(
-            min: 10,
-            max: 1000,
-            divisions: 99,
-            value: c.target.toDouble(),
-            onChanged: (v) => c.setTarget(v.toInt()),
-          ),
+            Text('Threshold: ${c.threshold.toStringAsFixed(1)}'),
+            Slider(
+              min: 0,
+              max: c.maxSensorValue + 20,
+              value: c.threshold,
+              onChanged: c.setThreshold,
+            ),
 
-          Text("Alert distance: ${c.alertDistance}"),
-          Slider(
-            min: 1,
-            max: 20,
-            divisions: 19,
-            value: c.alertDistance.toDouble(),
-            onChanged: (v) => c.setAlertDistance(v.toInt()),
-          ),
+            Text('Debounce (ms): ${c.debounce}'),
+            Slider(
+              min: 10,
+              max: 2000,
+              divisions: 199,
+              value: c.debounce.toDouble(),
+              onChanged: (v) => c.setDebounce(v.toInt()),
+            ),
 
-          const Divider(),
+            const Divider(),
 
-          DropdownButton<SensorType>(
-            value: c.sensorType,
-            onChanged: (v) => c.setSensorType(v!),
-            items: const [
-              DropdownMenuItem(
-                value: SensorType.magnetometer,
-                child: Text("Magnetometer"),
-              ),
-              DropdownMenuItem(
-                value: SensorType.microphone,
-                child: Text("Microphone"),
-              ),
-            ],
-          ),
-        ],
+            const Text('Target Count'),
+            TextField(
+              keyboardType: TextInputType.number,
+              controller: targetController,
+              onSubmitted: (v) {
+                final n = int.tryParse(v);
+                if (n != null) c.setTarget(n);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

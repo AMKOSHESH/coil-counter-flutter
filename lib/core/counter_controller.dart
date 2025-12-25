@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'pulse_detector.dart';
 import 'target_alert.dart';
 
-enum SensorType { magnetometer, microphone }
-
 class CounterController extends ChangeNotifier {
   int count = 0;
   bool running = false;
@@ -14,9 +12,8 @@ class CounterController extends ChangeNotifier {
   int target = 100;
   int alertDistance = 5;
 
-  SensorType sensorType = SensorType.magnetometer;
-
   double sensorValue = 0;
+  double maxSensorValue = 100;
 
   late PulseDetector detector;
   final TargetAlert alert = TargetAlert();
@@ -35,11 +32,12 @@ class CounterController extends ChangeNotifier {
 
   void updateSensor(double v) {
     sensorValue = v;
-    notifyListeners();
+    if (v > maxSensorValue) maxSensorValue = v;
 
     if (detector.process(v)) {
       onPulse();
     }
+    notifyListeners();
   }
 
   void onPulse() {
@@ -53,12 +51,30 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void start() { running = true; notifyListeners(); }
-  void stop() { running = false; notifyListeners(); }
-  void reset() { count = 0; notifyListeners(); }
+  void start() {
+    running = true;
+    notifyListeners();
+  }
+
+  void stop() {
+    running = false;
+    notifyListeners();
+  }
+
+  void reset() {
+    count = 0;
+    alert.reset();
+    notifyListeners();
+  }
 
   void setThreshold(double v) {
     threshold = v;
+    _rebuildDetector();
+    notifyListeners();
+  }
+
+  void setDebounce(int v) {
+    debounce = v;
     _rebuildDetector();
     notifyListeners();
   }
@@ -68,13 +84,10 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setAlertDistance(int v) {
-    alertDistance = v;
-    notifyListeners();
-  }
-
-  void setSensorType(SensorType t) {
-    sensorType = t;
-    notifyListeners();
+  Color get counterColor {
+    if (count >= target) return Colors.red;
+    if (target - count <= 1) return Colors.orange;
+    if (target - count <= alertDistance) return Colors.yellow;
+    return Colors.white;
   }
 }

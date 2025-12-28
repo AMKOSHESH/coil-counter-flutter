@@ -12,7 +12,6 @@ class SensorChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (values.isEmpty) return const Center(child: Text('Waiting for Signal...'));
 
-    // پایداری: محاسبه سقف نمودار با مقدار حداقل برای جلوگیری از تقسیم بر صفر
     final currentMax = values.reduce((a, b) => a > b ? a : b);
     final maxY = currentMax < 10 ? 100.0 : currentMax * 1.2;
 
@@ -27,7 +26,7 @@ class SensorChart extends StatelessWidget {
           minY: 0,
           maxY: maxY,
           gridData: FlGridData(show: false),
-          titlesData: FlTitlesData(show: false), // ساده‌سازی برای پرفورمنس
+          titlesData: FlTitlesData(show: false),
           borderData: FlBorderData(show: true, border: Border.all(color: Colors.white10)),
           lineBarsData: [
             LineChartBarData(

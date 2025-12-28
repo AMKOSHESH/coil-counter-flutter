@@ -29,7 +29,6 @@ class CounterController extends ChangeNotifier {
     );
   }
 
-  // بهبود: متد به‌روزرسانی سنسور با مدیریت مقدار ماکزیمم
   void updateSensor(double v) {
     sensorValue = v;
     if (v > maxSensorValue) maxSensorValue = v;
@@ -40,10 +39,9 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // قابلیت جدید: کالیبراسیون خودکار بر اساس بیشترین مقدار مشاهده شده
   void autoCalibrate() {
     if (maxSensorValue > 10) {
-      threshold = maxSensorValue * 0.7; // تنظیم آستانه روی ۷۰٪ اوج سیگنال
+      threshold = maxSensorValue * 0.7;
       _rebuildDetector();
       notifyListeners();
     }
@@ -65,7 +63,7 @@ class CounterController extends ChangeNotifier {
 
   void reset() {
     count = 0;
-    maxSensorValue = 100; // ریست کردن مقیاس نمودار
+    maxSensorValue = 100;
     alert.reset();
     notifyListeners();
   }

@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<double> buffer = [];
-  StreamSubscription? _sensorSubscription; // برای مدیریت باتری
+  StreamSubscription? _sensorSubscription;
 
   @override
   void initState() {
@@ -33,12 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
           counter.updateSensor(v);
         }
       },
-    ).start(); // متد start باید Subscription برگرداند
+    ).start();
   }
 
   @override
   void dispose() {
-    _sensorSubscription?.cancel(); // توقف سنسور هنگام خروج برای حفظ باتری
+    _sensorSubscription?.cancel();
     super.dispose();
   }
 
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Coil Counter Pro'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.AutoFixHigh), // دکمه کالیبراسیون سریع
+            icon: const Icon(Icons.auto_fix_high), // نام آیکون اصلاح شد
             onPressed: counter.autoCalibrate,
           ),
           IconButton(
@@ -69,7 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 30),
           Text(
             '${counter.count} / ${counter.target}',
-            style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold, color: counter.counterColor),
+            style: TextStyle(
+              fontSize: 80, 
+              fontWeight: FontWeight.bold, 
+              color: counter.counterColor
+            ),
           ),
           const Text('TURNS DETECTED', style: TextStyle(color: Colors.grey, letterSpacing: 2)),
           
@@ -89,14 +93,24 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                FloatingActionButton(onPressed: counter.start, child: const Icon(Icons.play_arrow), backgroundColor: Colors.green),
-                FloatingActionButton(onPressed: counter.stop, child: const Icon(Icons.stop), backgroundColor: Colors.red),
-                
-                // اصلاح دکمه‌های دستی
-                IconButton(icon: const Icon(Icons.remove_circle_outline, size: 35), onPressed: counter.manualDecrement),
-                IconButton(icon: const Icon(Icons.add_circle_outline, size: 35), onPressed: counter.manualIncrement),
-                
-                // اصلاح باگ دکمه Reset
+                FloatingActionButton(
+                  onPressed: counter.start, 
+                  backgroundColor: Colors.green,
+                  child: const Icon(Icons.play_arrow),
+                ),
+                FloatingActionButton(
+                  onPressed: counter.stop, 
+                  backgroundColor: Colors.red,
+                  child: const Icon(Icons.stop),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.remove_circle_outline, size: 35), 
+                  onPressed: counter.manualDecrement
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline, size: 35), 
+                  onPressed: counter.manualIncrement
+                ),
                 ElevatedButton(
                   onPressed: counter.reset,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),

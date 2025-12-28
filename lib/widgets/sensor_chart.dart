@@ -36,14 +36,23 @@ class SensorChart extends StatelessWidget {
           maxY: maxY,
           gridData: FlGridData(show: true),
           titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-          ),
-          lineBarsData: [
+  leftTitles: AxisTitles(
+    sideTitles: SideTitles(
+      showTitles: true,
+      reservedSize: 40,
+    ),
+  ),
+  rightTitles: AxisTitles(
+    sideTitles: SideTitles(showTitles: false),
+  ),
+  topTitles: AxisTitles(
+    sideTitles: SideTitles(showTitles: false),
+  ),
+  bottomTitles: AxisTitles(
+    sideTitles: SideTitles(showTitles: false),
+  ),
+),
+
             LineChartBarData(
               spots: values
                   .asMap()

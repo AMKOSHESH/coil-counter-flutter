@@ -8,7 +8,6 @@ class CounterController extends ChangeNotifier {
 
   double threshold = 70;
   int debounce = 200;
-
   int target = 100;
   int alertDistance = 5;
 
@@ -30,6 +29,7 @@ class CounterController extends ChangeNotifier {
     );
   }
 
+  // بهبود: متد به‌روزرسانی سنسور با مدیریت مقدار ماکزیمم
   void updateSensor(double v) {
     sensorValue = v;
     if (v > maxSensorValue) maxSensorValue = v;
@@ -38,6 +38,15 @@ class CounterController extends ChangeNotifier {
       onPulse();
     }
     notifyListeners();
+  }
+
+  // قابلیت جدید: کالیبراسیون خودکار بر اساس بیشترین مقدار مشاهده شده
+  void autoCalibrate() {
+    if (maxSensorValue > 10) {
+      threshold = maxSensorValue * 0.7; // تنظیم آستانه روی ۷۰٪ اوج سیگنال
+      _rebuildDetector();
+      notifyListeners();
+    }
   }
 
   void onPulse() {
@@ -51,18 +60,12 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void start() {
-    running = true;
-    notifyListeners();
-  }
-
-  void stop() {
-    running = false;
-    notifyListeners();
-  }
+  void start() { running = true; notifyListeners(); }
+  void stop() { running = false; notifyListeners(); }
 
   void reset() {
     count = 0;
+    maxSensorValue = 100; // ریست کردن مقیاس نمودار
     alert.reset();
     notifyListeners();
   }
@@ -84,18 +87,8 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
-
-    void manualIncrement() {
-    count++;
-    notifyListeners();
-  }
-
-  void manualDecrement() {
-    if (count > 0) {
-      count--;
-      notifyListeners();
-    }
-  }
+  void manualIncrement() { count++; notifyListeners(); }
+  void manualDecrement() { if (count > 0) count--; notifyListeners(); }
 
   Color get counterColor {
     if (count >= target) return Colors.red;

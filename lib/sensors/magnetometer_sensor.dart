@@ -14,7 +14,6 @@ class MagnetometerSensor {
     required this.onValue,
   });
 
-  // تغییر: حالا یک StreamSubscription برمی‌گرداند تا قابل متوقف کردن باشد
   StreamSubscription start() {
     return magnetometerEvents.listen((event) {
       final magnitude = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);

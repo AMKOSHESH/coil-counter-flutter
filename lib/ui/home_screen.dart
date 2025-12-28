@@ -69,6 +69,16 @@ class _HomeScreenState extends State<HomeScreen> {
               color: counter.counterColor,
             ),
           ),
+Padding(
+  padding: const EdgeInsets.only(top: 8, right: 12),
+  child: Align(
+    alignment: Alignment.topRight,
+    child: Text(
+      'Total: ${counter.target}',
+      style: const TextStyle(fontSize: 20),
+    ),
+  ),
+),
 
           const SizedBox(height: 8),
           const Text(

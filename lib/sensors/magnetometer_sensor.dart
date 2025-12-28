@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../core/pulse_detector.dart';
@@ -13,16 +14,11 @@ class MagnetometerSensor {
     required this.onValue,
   });
 
-  void start() {
-    magnetometerEvents.listen((event) {
-      final magnitude = sqrt(
-        event.x * event.x +
-        event.y * event.y +
-        event.z * event.z,
-      );
-
+  // تغییر: حالا یک StreamSubscription برمی‌گرداند تا قابل متوقف کردن باشد
+  StreamSubscription start() {
+    return magnetometerEvents.listen((event) {
+      final magnitude = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
       onValue(magnitude);
-
       if (detector.process(magnitude)) {
         onPulse();
       }

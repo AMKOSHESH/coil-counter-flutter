@@ -126,6 +126,15 @@ Padding(
         onPressed: counter.manualIncrement,
       ),
       ElevatedButton(
+        onPressed: () async {
+  counter.reset();
+  await counter.alert.check(
+    count: 0,
+    target: 1,
+    alertDistance: 1,
+  );
+},
+
         onPressed: counter.reset,
         child: const Text('RESET'),
       ),

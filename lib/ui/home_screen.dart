@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../core/counter_controller.dart';
 import '../sensors/magnetometer_sensor.dart';
 import '../widgets/sensor_chart.dart';
@@ -8,32 +8,38 @@ import 'settings_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<double> buffer = [];
+  StreamSubscription? _sensorSubscription; // برای مدیریت باتری
 
   @override
   void initState() {
     super.initState();
+    final counter = Provider.of<CounterController>(context, listen: false);
 
-    final counter =
-        Provider.of<CounterController>(context, listen: false);
-
-    MagnetometerSensor(
+    _sensorSubscription = MagnetometerSensor(
       detector: counter.detector,
       onPulse: counter.onPulse,
       onValue: (v) {
-        if (buffer.length > 200) {
-          buffer.removeAt(0);
+        if (mounted) {
+          setState(() {
+            if (buffer.length > 150) buffer.removeAt(0);
+            buffer.add(v);
+          });
+          counter.updateSensor(v);
         }
-        buffer.add(v);
-        counter.updateSensor(v);
       },
-    ).start();
+    ).start(); // متد start باید Subscription برگرداند
+  }
+
+  @override
+  void dispose() {
+    _sensorSubscription?.cancel(); // توقف سنسور هنگام خروج برای حفظ باتری
+    super.dispose();
   }
 
   @override
@@ -42,53 +48,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Coil Counter'),
+        title: const Text('Coil Counter Pro'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.AutoFixHigh), // دکمه کالیبراسیون سریع
+            onPressed: counter.autoCalibrate,
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => const SettingsSheet(),
-              );
-            },
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (_) => const SettingsSheet(),
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
           const SizedBox(height: 30),
-
-          /// شمارنده اصلی + هدف
           Text(
             '${counter.count} / ${counter.target}',
-            style: TextStyle(
-              fontSize: 80,
-              fontWeight: FontWeight.bold,
-              color: counter.counterColor,
-            ),
+            style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold, color: counter.counterColor),
           ),
-Padding(
-  padding: const EdgeInsets.only(top: 8, right: 12),
-  child: Align(
-    alignment: Alignment.topRight,
-    child: Text(
-      'Total: ${counter.target}',
-      style: const TextStyle(fontSize: 20),
-    ),
-  ),
-),
-
-          const SizedBox(height: 8),
-          const Text(
-            'TOTAL TURNS',
-            style: TextStyle(color: Colors.grey),
-          ),
-
-          const SizedBox(height: 20),
-
-          /// نمودار سیگنال
+          const Text('TURNS DETECTED', style: TextStyle(color: Colors.grey, letterSpacing: 2)),
+          
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -100,48 +84,27 @@ Padding(
             ),
           ),
 
-          const SizedBox(height: 10),
-
-          /// دکمه‌ها
-
-Padding(
-  padding: const EdgeInsets.only(bottom: 30),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    children: [
-      ElevatedButton(
-        onPressed: counter.start,
-        child: const Text('START'),
-      ),
-      ElevatedButton(
-        onPressed: counter.stop,
-        child: const Text('STOP'),
-      ),
-      IconButton(
-        icon: const Icon(Icons.remove_circle, size: 36),
-        onPressed: counter.manualDecrement,
-      ),
-      IconButton(
-        icon: const Icon(Icons.add_circle, size: 36),
-        onPressed: counter.manualIncrement,
-      ),
-      ElevatedButton(
-        onPressed: () async {
-  counter.reset();
-  await counter.alert.check(
-    count: 0,
-    target: 1,
-    alertDistance: 1,
-  );
-},
-
-        onPressed: counter.reset,
-        child: const Text('RESET'),
-      ),
-    ],
-  ),
-),
-
+          Padding(
+            padding: const EdgeInsets.only(bottom: 40, left: 10, right: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FloatingActionButton(onPressed: counter.start, child: const Icon(Icons.play_arrow), backgroundColor: Colors.green),
+                FloatingActionButton(onPressed: counter.stop, child: const Icon(Icons.stop), backgroundColor: Colors.red),
+                
+                // اصلاح دکمه‌های دستی
+                IconButton(icon: const Icon(Icons.remove_circle_outline, size: 35), onPressed: counter.manualDecrement),
+                IconButton(icon: const Icon(Icons.add_circle_outline, size: 35), onPressed: counter.manualIncrement),
+                
+                // اصلاح باگ دکمه Reset
+                ElevatedButton(
+                  onPressed: counter.reset,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
+                  child: const Text('RESET'),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

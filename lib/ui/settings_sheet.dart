@@ -2,14 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/counter_controller.dart';
 
-class SettingsSheet extends StatelessWidget {
+class SettingsSheet extends StatefulWidget {
   const SettingsSheet({super.key});
+
+  @override
+  State<SettingsSheet> createState() => _SettingsSheetState();
+}
+
+class _SettingsSheetState extends State<SettingsSheet> {
+  late TextEditingController targetController;
+
+  @override
+  void initState() {
+    super.initState();
+    final c = context.read<CounterController>();
+    targetController =
+        TextEditingController(text: c.target.toString());
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.watch<CounterController>();
-    final targetController =
-        TextEditingController(text: c.target.toString());
 
     return Scaffold(
       appBar: AppBar(
@@ -19,46 +32,40 @@ class SettingsSheet extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            Text('Signal Level: ${c.sensorValue.toStringAsFixed(1)}'),
-            LinearProgressIndicator(
-              value: c.sensorValue / c.maxSensorValue,
-            ),
-            const SizedBox(height: 20),
+        children: [
+          Text('Debounce (ms): ${c.debounce}'),
+          Slider(
+            min: 10,
+            max: 2000,
+            divisions: 199,
+            value: c.debounce.toDouble(),
+            onChanged: (v) => c.setDebounce(v.toInt()),
+          ),
 
-            Text('Threshold: ${c.threshold.toStringAsFixed(1)}'),
-            Slider(
-              min: 0,
-              max: c.maxSensorValue + 20,
-              value: c.threshold,
-              onChanged: c.setThreshold,
-            ),
+          const Divider(),
 
-            Text('Debounce (ms): ${c.debounce}'),
-            Slider(
-              min: 10,
-              max: 2000,
-              divisions: 199,
-              value: c.debounce.toDouble(),
-              onChanged: (v) => c.setDebounce(v.toInt()),
+          const Text('Target (1 تا 9999)'),
+          TextField(
+            controller: targetController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'مثلاً 120',
             ),
-
-            const Divider(),
-
-            const Text('Target Count'),
-            TextField(
-              keyboardType: TextInputType.number,
-              controller: targetController,
-              onSubmitted: (v) {
-                final n = int.tryParse(v);
-                if (n != null) c.setTarget(n);
-              },
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              final v = int.tryParse(targetController.text);
+              if (v != null && v >= 1 && v <= 9999) {
+                c.setTarget(v);
+              }
+            },
+            child: const Text('Apply Target'),
+          ),
+        ],
       ),
     );
   }

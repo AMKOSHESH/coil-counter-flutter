@@ -10,29 +10,28 @@ class SensorChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (values.isEmpty) return const Center(child: Text('Waiting for Signal...'));
-
-    final currentMax = values.reduce((a, b) => a > b ? a : b);
-    final maxY = currentMax < 10 ? 100.0 : currentMax * 1.2;
-
     return GestureDetector(
       onTapDown: (details) {
         final box = context.findRenderObject() as RenderBox;
-        final tappedValue = maxY * (1 - details.localPosition.dy / box.size.height);
-        onTap(tappedValue.clamp(0, maxY));
+        final tappedValue = 1000 * (1 - details.localPosition.dy / box.size.height);
+        onTap(tappedValue.clamp(0, 1000));
       },
       child: LineChart(
         LineChartData(
           minY: 0,
-          maxY: maxY,
-          gridData: FlGridData(show: false),
-          titlesData: FlTitlesData(show: false),
-          borderData: FlBorderData(show: true, border: Border.all(color: Colors.white10)),
+          maxY: 1000, // محور عمودی روی ۱۰۰۰ فیکس شد
+          gridData: FlGridData(show: true, horizontalInterval: 200),
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
           lineBarsData: [
             LineChartBarData(
               spots: values.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList(),
               isCurved: true,
-              color: Colors.blueAccent,
+              color: Colors.blue,
               barWidth: 2,
               dotData: FlDotData(show: false),
             ),

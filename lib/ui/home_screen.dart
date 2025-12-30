@@ -14,23 +14,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final List<double> buffer = [];
-  StreamSubscription? _sensorSubscription;
+  StreamSubscription? _sub;
 
   @override
   void initState() {
     super.initState();
-    final counter = Provider.of<CounterController>(context, listen: false);
-
-    _sensorSubscription = MagnetometerSensor(
-      detector: counter.detector,
-      onPulse: counter.onPulse,
+    final c = context.read<CounterController>();
+    _sub = MagnetometerSensor(
+      detector: c.detector,
+      onPulse: c.onPulse,
       onValue: (v) {
         if (mounted) {
           setState(() {
             if (buffer.length > 150) buffer.removeAt(0);
             buffer.add(v);
           });
-          counter.updateSensor(v);
+          c.updateSensor(v);
         }
       },
     ).start();
@@ -38,22 +37,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _sensorSubscription?.cancel();
+    _sub?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final counter = context.watch<CounterController>();
+    final c = context.watch<CounterController>();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Coil Counter Pro'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.auto_fix_high), // نام آیکون اصلاح شد
-            onPressed: counter.autoCalibrate,
-          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => showModalBottomSheet(
@@ -66,56 +61,30 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
           Text(
-            '${counter.count} / ${counter.target}',
-            style: TextStyle(
-              fontSize: 80, 
-              fontWeight: FontWeight.bold, 
-              color: counter.counterColor
-            ),
+            '${c.count}',
+            style: TextStyle(fontSize: 100, fontWeight: FontWeight.bold, color: c.counterColor),
           ),
-          const Text('TURNS DETECTED', style: TextStyle(color: Colors.grey, letterSpacing: 2)),
+          Text('GOAL: ${c.target}', style: const TextStyle(fontSize: 20, color: Colors.grey)),
           
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SensorChart(
-                values: buffer,
-                threshold: counter.threshold,
-                onTap: counter.setThreshold,
-              ),
+              padding: const EdgeInsets.all(20),
+              child: SensorChart(values: buffer, threshold: c.threshold, onTap: c.setThreshold),
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.only(bottom: 40, left: 10, right: 10),
+            padding: const EdgeInsets.only(bottom: 50),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                FloatingActionButton(
-                  onPressed: counter.start, 
-                  backgroundColor: Colors.green,
-                  child: const Icon(Icons.play_arrow),
-                ),
-                FloatingActionButton(
-                  onPressed: counter.stop, 
-                  backgroundColor: Colors.red,
-                  child: const Icon(Icons.stop),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, size: 35), 
-                  onPressed: counter.manualDecrement
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline, size: 35), 
-                  onPressed: counter.manualIncrement
-                ),
-                ElevatedButton(
-                  onPressed: counter.reset,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
-                  child: const Text('RESET'),
-                ),
+                FloatingActionButton(onPressed: c.start, backgroundColor: Colors.green, child: const Icon(Icons.play_arrow)),
+                FloatingActionButton(onPressed: c.stop, backgroundColor: Colors.red, child: const Icon(Icons.stop)),
+                IconButton(icon: const Icon(Icons.remove_circle_outline, size: 40), onPressed: c.manualDecrement),
+                IconButton(icon: const Icon(Icons.add_circle_outline, size: 40), onPressed: c.manualIncrement),
+                ElevatedButton(onPressed: c.reset, child: const Text('RESET')),
               ],
             ),
           ),

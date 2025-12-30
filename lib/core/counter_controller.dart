@@ -9,7 +9,8 @@ class CounterController extends ChangeNotifier {
   double threshold = 70.0;
   int debounce = 200;
   int target = 100;
-  
+  int sensorIntervalMs = 1; // جدید: نرخ خواندن سنسور
+
   bool isSoundEnabled = true;
   bool isVibrationEnabled = true;
 
@@ -19,9 +20,7 @@ class CounterController extends ChangeNotifier {
   late PulseDetector detector;
   final TargetAlert alert = TargetAlert();
 
-  CounterController() {
-    _rebuildDetector();
-  }
+  CounterController() { _rebuildDetector(); }
 
   void _rebuildDetector() {
     detector = PulseDetector(
@@ -34,19 +33,8 @@ class CounterController extends ChangeNotifier {
   void updateSensor(double v) {
     sensorValue = v;
     if (v > maxDetectedValue) maxDetectedValue = v;
-    
-    if (detector.process(v)) {
-      onPulse();
-    }
+    if (detector.process(v)) onPulse();
     notifyListeners();
-  }
-
-  void autoCalibrate() {
-    if (maxDetectedValue > 5) {
-      threshold = maxDetectedValue * 0.75; // ۷۵ درصد اوج سیگنال
-      _rebuildDetector();
-      notifyListeners();
-    }
   }
 
   void onPulse() {
@@ -61,38 +49,30 @@ class CounterController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setThreshold(double v) {
-    threshold = v;
-    _rebuildDetector();
-    notifyListeners();
+  void autoCalibrate() {
+    if (maxDetectedValue > 5) {
+      threshold = maxDetectedValue * 0.75;
+      _rebuildDetector();
+      notifyListeners();
+    }
   }
 
-  void setTarget(int v) {
-    target = v;
+  void setSensorInterval(int ms) {
+    sensorIntervalMs = ms;
     notifyListeners();
+    // نیاز به ریست کردن استریم در سنسور دارد
   }
 
-  void setDebounce(int v) {
-    debounce = v;
-    _rebuildDetector();
-    notifyListeners();
-  }
-
-  void toggleSound(bool v) => {isSoundEnabled = v, notifyListeners()};
-  void toggleVibration(bool v) => {isVibrationEnabled = v, notifyListeners()};
-
-  void start() => {running = true, notifyListeners()};
-  void stop() => {running = false, notifyListeners()};
-  
-  void reset() {
-    count = 0;
-    maxDetectedValue = 0;
-    alert.reset();
-    notifyListeners();
-  }
-
-  void manualIncrement() => {count++, notifyListeners()};
-  void manualDecrement() => {if (count > 0) count--, notifyListeners()};
+  void setThreshold(double v) { threshold = v; _rebuildDetector(); notifyListeners(); }
+  void setTarget(int v) { target = v; notifyListeners(); }
+  void setDebounce(int v) { debounce = v; _rebuildDetector(); notifyListeners(); }
+  void toggleSound(bool v) { isSoundEnabled = v; notifyListeners(); }
+  void toggleVibration(bool v) { isVibrationEnabled = v; notifyListeners(); }
+  void start() { running = true; notifyListeners(); }
+  void stop() { running = false; notifyListeners(); }
+  void reset() { count = 0; maxDetectedValue = 0; alert.reset(); notifyListeners(); }
+  void manualIncrement() { count++; notifyListeners(); }
+  void manualDecrement() { if (count > 0) count--; notifyListeners(); }
 
   Color get counterColor {
     if (count >= target) return Colors.red;

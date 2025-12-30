@@ -12,10 +12,10 @@ class TargetAlert {
 
   Future<void> _playSound(double vol, int count) async {
     for (int i = 0; i < count; i++) {
-      await _player.stop();
+      await _player.stop(); // توقف آنی برای پخش سریع بعدی
       await _player.setVolume(vol);
       await _player.play(AssetSource('beep.mp3'), mode: PlayerMode.lowLatency);
-      if (count > 1) await Future.delayed(const Duration(milliseconds: 100));
+      if (count > 1) await Future.delayed(const Duration(milliseconds: 120));
     }
   }
 
@@ -32,9 +32,9 @@ class TargetAlert {
       if (soundEnabled) _playSound(1.0, 5);
       if (vibrationEnabled) Vibration.vibrate(duration: 1000);
     } else if (target - count <= 5 && count < target) {
-      if (soundEnabled) _playSound(0.7, 2);
+      if (soundEnabled) _playSound(0.7, 2); // دو بوق برای ۵ دور آخر
     } else if (count < target) {
-      if (soundEnabled) _playSound(0.15, 1);
+      if (soundEnabled) _playSound(0.15, 1); // بوق ضعیف برای دورهای عادی
     }
   }
 

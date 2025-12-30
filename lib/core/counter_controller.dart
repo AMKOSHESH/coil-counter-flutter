@@ -5,67 +5,49 @@ import 'target_alert.dart';
 class CounterController extends ChangeNotifier {
   int count = 0;
   bool running = false;
-  
   double threshold = 70.0;
-  int debounce = 200;
   int target = 100;
-  int sensorIntervalMs = 1; // جدید: نرخ خواندن سنسور
+  int processDelayMs = 1; // تاخیر پردازش دستی (میلی ثانیه)
 
   bool isSoundEnabled = true;
   bool isVibrationEnabled = true;
 
   double sensorValue = 0;
   double maxDetectedValue = 0.0;
+  DateTime _lastProcessTime = DateTime.now();
 
   late PulseDetector detector;
   final TargetAlert alert = TargetAlert();
 
-  CounterController() { _rebuildDetector(); }
+  CounterController() { _rebuild(); }
 
-  void _rebuildDetector() {
-    detector = PulseDetector(
-      highThreshold: threshold,
-      lowThreshold: threshold * 0.8,
-      debounceMs: debounce,
-    );
+  void _rebuild() {
+    detector = PulseDetector(highThreshold: threshold, lowThreshold: threshold * 0.8, debounceMs: 50);
   }
 
   void updateSensor(double v) {
     sensorValue = v;
     if (v > maxDetectedValue) maxDetectedValue = v;
-    if (detector.process(v)) onPulse();
-    notifyListeners();
+
+    // کنترل سرعت پردازش دستی
+    final now = DateTime.now();
+    if (now.difference(_lastProcessTime).inMilliseconds >= processDelayMs) {
+      if (detector.process(v)) onPulse();
+      _lastProcessTime = now;
+      notifyListeners();
+    }
   }
 
   void onPulse() {
     if (!running) return;
     count++;
-    alert.check(
-      count: count,
-      target: target,
-      soundEnabled: isSoundEnabled,
-      vibrationEnabled: isVibrationEnabled,
-    );
-    notifyListeners();
+    alert.check(count: count, target: target, soundEnabled: isSoundEnabled, vibrationEnabled: isVibrationEnabled);
   }
 
-  void autoCalibrate() {
-    if (maxDetectedValue > 5) {
-      threshold = maxDetectedValue * 0.75;
-      _rebuildDetector();
-      notifyListeners();
-    }
-  }
-
-  void setSensorInterval(int ms) {
-    sensorIntervalMs = ms;
-    notifyListeners();
-    // نیاز به ریست کردن استریم در سنسور دارد
-  }
-
-  void setThreshold(double v) { threshold = v; _rebuildDetector(); notifyListeners(); }
+  void setProcessDelay(int ms) { processDelayMs = ms; notifyListeners(); }
+  void autoCalibrate() { if (maxDetectedValue > 5) { threshold = maxDetectedValue * 0.75; _rebuild(); notifyListeners(); } }
+  void setThreshold(double v) { threshold = v; _rebuild(); notifyListeners(); }
   void setTarget(int v) { target = v; notifyListeners(); }
-  void setDebounce(int v) { debounce = v; _rebuildDetector(); notifyListeners(); }
   void toggleSound(bool v) { isSoundEnabled = v; notifyListeners(); }
   void toggleVibration(bool v) { isVibrationEnabled = v; notifyListeners(); }
   void start() { running = true; notifyListeners(); }
@@ -74,9 +56,5 @@ class CounterController extends ChangeNotifier {
   void manualIncrement() { count++; notifyListeners(); }
   void manualDecrement() { if (count > 0) count--; notifyListeners(); }
 
-  Color get counterColor {
-    if (count >= target) return Colors.red;
-    if (target - count <= 5) return Colors.orange;
-    return Colors.white;
-  }
+  Color get counterColor => (count >= target) ? Colors.red : (target - count <= 5 ? Colors.orange : Colors.white);
 }

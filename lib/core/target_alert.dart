@@ -6,27 +6,27 @@ class TargetAlert {
   final AudioPlayer _player = AudioPlayer();
   bool _playedFinal = false;
 
-  Future<void> playBeeps(int count, double volume) async {
+  // تابع کمکی برای پخش تعداد مشخص بوق با بلندی صدای معین
+  Future<void> _playMultiBeep(int times, double volume) async {
     await _player.setVolume(volume);
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < times; i++) {
       await _player.play(AssetSource('beep.mp3'), mode: PlayerMode.lowLatency);
-      await Future.delayed(const Duration(milliseconds: 150)); // فاصله بین بوق‌ها
+      await Future.delayed(const Duration(milliseconds: 200));
     }
   }
 
   Future<void> check({
     required int count,
     required int target,
-    required int alertDistance,
     required bool soundEnabled,
     required bool vibrationEnabled,
   }) async {
-    if (!soundEnabled && !vibrationEnabled) return;
+    if (count <= 0) return;
 
-    // ۱. رسیدن به هدف (۵ بوق + ویبره)
-    if (count == target && !_playedFinal) {
+    // ۱. رسیدن به هدف: ۵ بوق + ویبره قوی
+    if (count >= target && !_playedFinal) {
       _playedFinal = true;
-      if (soundEnabled) await playBeeps(5, 1.0);
+      if (soundEnabled) await _playMultiBeep(5, 1.0);
       if (vibrationEnabled) {
         if (await Vibration.hasVibrator() ?? false) {
           Vibration.vibrate(duration: 1000);
@@ -35,15 +35,18 @@ class TargetAlert {
       return;
     }
 
-    // ۲. ۵ دور آخر (صدای قوی‌تر + ۲ بوق)
-    if (target - count <= 5 && count < target && count > 0) {
-      if (soundEnabled) await playBeeps(2, 0.8);
+    // ۲. ۵ دور آخر: ۲ بوق بلندتر
+    if (target - count <= 5 && count < target) {
+      if (soundEnabled) await _playMultiBeep(2, 0.8);
       return;
     }
 
-    // ۳. دورهای عادی (صدای ضعیف + ۱ بوق)
-    if (count < target && count > 0) {
-      if (soundEnabled) await playBeeps(1, 0.1);
+    // ۳. دورهای عادی: ۱ بوق خیلی ضعیف
+    if (count < target) {
+      if (soundEnabled) {
+        await _player.setVolume(0.1);
+        await _player.play(AssetSource('beep.mp3'), mode: PlayerMode.lowLatency);
+      }
     }
   }
 

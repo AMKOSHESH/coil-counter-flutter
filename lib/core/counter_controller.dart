@@ -7,7 +7,7 @@ class CounterController extends ChangeNotifier {
   bool running = false;
   double threshold = 70.0;
   int target = 100;
-  int processDelayMs = 1; // تاخیر پردازش دستی (میلی ثانیه)
+  int processDelayMs = 1; // تنظیم دستی سرعت پردازش از ۱ میلی‌ثانیه
 
   bool isSoundEnabled = true;
   bool isVibrationEnabled = true;
@@ -29,10 +29,12 @@ class CounterController extends ChangeNotifier {
     sensorValue = v;
     if (v > maxDetectedValue) maxDetectedValue = v;
 
-    // کنترل سرعت پردازش دستی
     final now = DateTime.now();
+    // اعمال فیلتر سرعت بر اساس میلی‌ثانیه انتخابی کاربر
     if (now.difference(_lastProcessTime).inMilliseconds >= processDelayMs) {
-      if (detector.process(v)) onPulse();
+      if (detector.process(v)) {
+        onPulse();
+      }
       _lastProcessTime = now;
       notifyListeners();
     }
@@ -42,17 +44,27 @@ class CounterController extends ChangeNotifier {
     if (!running) return;
     count++;
     alert.check(count: count, target: target, soundEnabled: isSoundEnabled, vibrationEnabled: isVibrationEnabled);
+    notifyListeners();
   }
 
   void setProcessDelay(int ms) { processDelayMs = ms; notifyListeners(); }
-  void autoCalibrate() { if (maxDetectedValue > 5) { threshold = maxDetectedValue * 0.75; _rebuild(); notifyListeners(); } }
+  void autoCalibrate() { 
+    if (maxDetectedValue > 5) { 
+      threshold = maxDetectedValue * 0.75; 
+      _rebuild(); 
+      notifyListeners(); 
+    } 
+  }
+  
   void setThreshold(double v) { threshold = v; _rebuild(); notifyListeners(); }
   void setTarget(int v) { target = v; notifyListeners(); }
   void toggleSound(bool v) { isSoundEnabled = v; notifyListeners(); }
   void toggleVibration(bool v) { isVibrationEnabled = v; notifyListeners(); }
+  
   void start() { running = true; notifyListeners(); }
   void stop() { running = false; notifyListeners(); }
   void reset() { count = 0; maxDetectedValue = 0; alert.reset(); notifyListeners(); }
+  
   void manualIncrement() { count++; notifyListeners(); }
   void manualDecrement() { if (count > 0) count--; notifyListeners(); }
 

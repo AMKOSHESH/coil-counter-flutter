@@ -10,11 +10,14 @@ class SettingsSheet extends StatefulWidget {
 
 class _SettingsSheetState extends State<SettingsSheet> {
   late TextEditingController _thresholdController;
+  late TextEditingController _targetController;
 
   @override
   void initState() {
     super.initState();
-    _thresholdController = TextEditingController(text: context.read<CounterController>().threshold.toStringAsFixed(1));
+    final c = context.read<CounterController>();
+    _thresholdController = TextEditingController(text: c.threshold.toStringAsFixed(0));
+    _targetController = TextEditingController(text: c.target.toString());
   }
 
   @override
@@ -23,49 +26,59 @@ class _SettingsSheetState extends State<SettingsSheet> {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.8,
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const Text('Advanced Settings', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text('تنظیمات دستی', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             
-            // بارگراف تغییرات مغناطیسی
-            Text('Live Signal: ${c.sensorValue.toStringAsFixed(1)} µT'),
-            LinearProgressIndicator(value: (c.sensorValue / 200).clamp(0, 1), minHeight: 10),
+            // نمایش عدد لحظه‌ای سنسور و بارگراف تریگر
+            Text('Live: ${c.sensorValue.toStringAsFixed(1)} / Trigger: ${c.threshold.toStringAsFixed(0)}'),
+            const SizedBox(height: 10),
+            Stack(
+              children: [
+                LinearProgressIndicator(value: (c.sensorValue / 1000).clamp(0, 1), minHeight: 20, backgroundColor: Colors.grey[800]),
+                Positioned(
+                  left: (c.threshold / 1000) * MediaQuery.of(context).size.width * 0.8,
+                  child: Container(width: 2, height: 20, color: Colors.red),
+                )
+              ],
+            ),
             
             const Divider(height: 40),
 
-            // تنظیم سرعت پردازش (تاخیر میلی‌ثانیه‌ای)
-            Text('Processing Delay: ${c.processDelayMs} ms'),
+            // تنظیم دستی تریگر
+            TextField(
+              controller: _thresholdController,
+              decoration: const InputDecoration(labelText: 'سطح تریگر (µT)', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+              onChanged: (v) => c.setThreshold(double.tryParse(v) ?? c.threshold),
+            ),
+            
+            const SizedBox(height: 20),
+
+            // تنظیم عدد هدف
+            TextField(
+              controller: _targetController,
+              decoration: const InputDecoration(labelText: 'تعداد دور هدف', border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+              onChanged: (v) => c.setTarget(int.tryParse(v) ?? c.target),
+            ),
+
+            const Divider(height: 30),
+
+            Text('تاخیر پردازش: ${c.processDelayMs} ms'),
             Slider(
               value: c.processDelayMs.toDouble(),
               min: 1, max: 100,
               onChanged: (v) => c.setProcessDelay(v.toInt()),
             ),
 
-            const SizedBox(height: 20),
-
-            ElevatedButton.icon(
-              onPressed: () { c.autoCalibrate(); _thresholdController.text = c.threshold.toStringAsFixed(1); },
-              icon: const Icon(Icons.auto_fix_high),
-              label: const Text('Auto-Calibrate Trigger'),
-            ),
-
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: _thresholdController,
-              decoration: const InputDecoration(labelText: 'Manual Trigger Level', border: OutlineInputBorder()),
-              keyboardType: TextInputType.number,
-              onSubmitted: (v) => c.setThreshold(double.parse(v)),
-            ),
-
-            SwitchListTile(title: const Text('Sound'), value: c.isSoundEnabled, onChanged: c.toggleSound),
-            SwitchListTile(title: const Text('Vibration'), value: c.isVibrationEnabled, onChanged: c.toggleVibration),
+            SwitchListTile(title: const Text('صدا'), value: c.isSoundEnabled, onChanged: c.toggleSound),
+            SwitchListTile(title: const Text('ویبره'), value: c.isVibrationEnabled, onChanged: c.toggleVibration),
             
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('CLOSE')),
+            ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('تایید و بازگشت')),
           ],
         ),
       ),

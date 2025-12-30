@@ -32,10 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  void dispose() { _sub?.cancel(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(children: [
         const SizedBox(height: 30),
         Text('${c.count}', style: TextStyle(fontSize: 100, fontWeight: FontWeight.bold, color: c.counterColor)),
-        Text('TARGET: ${c.target}', style: const TextStyle(fontSize: 20, color: Colors.grey)),
+        const Text('TURNS DETECTED', style: TextStyle(color: Colors.grey)),
         Expanded(child: Padding(padding: const EdgeInsets.all(20), child: SensorChart(values: buffer, threshold: c.threshold, onTap: c.setThreshold))),
         Padding(
           padding: const EdgeInsets.only(bottom: 40),

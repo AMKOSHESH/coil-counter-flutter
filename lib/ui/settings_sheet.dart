@@ -131,6 +131,20 @@ class _SettingsSheetState extends State<SettingsSheet> {
               ),
               child: const Text('DONE / BACK'),
             ),
+            // ... بخش‌های قبلی ثابت ...
+            const Divider(height: 40, color: Colors.white24),
+            
+            Text('Sensor Sampling Delay: ${c.sensorIntervalMs} ms'),
+            Slider(
+              value: c.sensorIntervalMs.toDouble(),
+              min: 1,
+              max: 100,
+              divisions: 99,
+              onChanged: (v) => c.setSensorInterval(v.toInt()),
+            ),
+            const Text('Lower = Faster (Dependent on Phone Hardware)', 
+              style: TextStyle(fontSize: 10, color: Colors.grey)),
+// ... باقی‌مانده دکمه‌ها ...
           ],
         ),
       ),

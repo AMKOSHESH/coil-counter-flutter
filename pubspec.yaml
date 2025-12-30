@@ -1,5 +1,5 @@
 name: coil_counter
-description: Coil winding counter
+description: Professional Coil Winding Counter
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -7,13 +7,13 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  vibration: ^2.0.1
   flutter:
     sdk: flutter
   sensors_plus: ^6.1.1
   provider: ^6.1.2
   fl_chart: ^0.69.0
-  audioplayers: ^6.0.0
+  audioplayers: ^6.1.0
+  vibration: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -23,5 +23,3 @@ flutter:
   uses-material-design: true
   assets:
     - assets/beep.mp3
-
-

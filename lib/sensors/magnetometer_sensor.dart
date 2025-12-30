@@ -8,8 +8,8 @@ class MagnetometerSensor {
   MagnetometerSensor({required this.onValue});
 
   StreamSubscription start() {
-    // استفاده از بالاترین نرخ خروجی سخت‌افزار
-    return magnetometerEventStream(samplingPeriod: SensorInterval.fastest)
+    // استفاده از کمترین تاخیر ممکن (صفر) برای رسیدن به حداکثر سرعت سخت‌افزار
+    return magnetometerEventStream(samplingPeriod: Duration.zero)
         .listen((event) {
       final magnitude = sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
       onValue(magnitude);
